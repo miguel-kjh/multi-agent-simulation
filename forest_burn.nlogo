@@ -1,62 +1,127 @@
-patches-own [  
-  status ;normal burning burnt
+globals[
+	trees;
+  burned_trees;
+]
+
+patches-own [
+  status
+  temperature 
+  heat_dT
+  fire_dT
   fuel
-  humidity
-  heat
-  
-  status_ ;normal burning burnt
   fuel_
-  humidity_
-  heat_
 ]
 
 to setup
-  clear-patches
-  let n random 289
-  ask n-of n patches [patch_init]
-  ask patches [patch_render]
+  ask patches [patch_init]
+  set trees count patches with [status = "normal"]
+  render
 end
+
 
 to go
-  ask patches [patch_calculate]
+  ask patches with [status = "burning"] [patch_burn]
+  ask patches [patch_diffuse_heat]
   ask patches [patch_update]
-  ask patches [patch_render]
+  render
 end
+
 
 to patch_init
-  set fuel random 80
-  set heat 80
   set status "normal"
+  set fuel random 1000 * type_fuel
+  set temperature air_temperature
+  if random 1000 = 0 [set status "burning"]
 end
 
-to patch_calculate
-	set fuel_ fuel
-  set status_ status
-  set heat_ heat
-  set humidity_ humidity
+to patch_burn
+  set fire_dT 10
+  set fuel_ fuel - 1
+end
+
+to patch_diffuse_heat
+  set heat_dT  (- k * patch_heat_dT)
 end
 
 to patch_update
+  set temperature temperature + heat_dT + fire_dT
   set fuel fuel_
-  set status status_
-  set heat heat_
-  set humidity humidity_
+  if status = "burning" and fuel <= 0 [
+    ifelse random 100 < humidity
+    [ set status "normal" ]
+    [ update_fire ]
+  ]
 end
 
-to patch_render
-  if status = "burnt"   [set pcolor black]
-  if status = "normal"  [set pcolor burn_color]
-  if status = "burning" [set pcolor fuel_color]
-  if status = 0         [set pcolor 35]
+to-report patch_heat_dT
+  report temperature * 4 - sum [temperature] of neighbors4
 end
 
-to-report burn_color
-  report 19 - heat / 10
+to update_fire
+    ask neighbors4 with [ status = "normal" and temperature >= max_temperature] [
+      let probability 50
+      let direction towards myself
+      if direction = 0 [ set probability probability + north_wind ]
+      if direction = 90 [ set probability probability - west_wind ]
+      if direction = 180 [ set probability probability - north_wind ]
+      if direction = 270 [ set probability probability + west_wind ]
+
+      if random 100 < probability [
+        set status "burning"
+      ]
+    ]
+
+    if fuel <= 0 [set status "burnt"]
 end
 
-to-report fuel_color
-  report 69 - fuel / 10
+to render
+  ask patches with [status = "normal"] [patch_render_normal]
+  ask patches with [status = "burning"] [patch_render_burning]
+  ask patches with [status = "burnt"] [patch_render_burnt]
+  ask patches with [status = "wall"]	[patch_render_wall]
+  update_tree_count
 end
+
+to update_tree_count
+  set burned_trees count patches with [status = "burnt"]
+  set trees count patches with [status = "normal"]
+end
+
+to patch_render_normal
+  set pcolor green
+end
+
+to patch_render_burning
+  set pcolor  (- temperature * 8) / 1000 + 19
+end
+
+to patch_render_burnt
+  set pcolor black
+end
+
+to add_fire
+  if mouse-down? [
+    ask patch round mouse-xcor round mouse-ycor[
+      set status "burning"
+   ]
+  ]
+  render
+end
+
+to add_wall
+  if mouse-down? [
+    ask patch round mouse-xcor round mouse-ycor[
+      set status "wall"
+   ]
+  ]
+  render
+end
+
+to patch_render_wall
+	set pcolor cyan
+end
+
+
 
 
 
@@ -64,24 +129,24 @@ end
 GRAPHICS-WINDOW
 210
 10
-639
-439
+614
+414
 -1
 -1
-13
+4
 1
 10
 1
 1
 1
 0
+0
+0
 1
-1
-1
--16
-16
--16
-16
+-50
+50
+-50
+50
 0
 0
 1
@@ -89,28 +154,11 @@ ticks
 30
 
 BUTTON
-25
-45
-110
-105
-NIL
-go
-T
-1
-T
-OBSERVER
-NIL
-NIL
-NIL
-NIL
-1
-
-BUTTON
-25
-130
-110
-190
-NIL
+10
+0
+80
+50
+setup
 setup
 NIL
 1
@@ -122,50 +170,178 @@ NIL
 NIL
 1
 
-SLIDER
-24
-245
-194
-278
-density
-density
-0
-100
-50
+BUTTON
+10
+60
+80
+105
+go
+go
+T
 1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+15
+120
+185
+153
+k
+k
+0.01
+0.25
+0.1
+.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-25
-355
-195
-388
-wind_direction
-wind_direction
-0
-4
-50
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-23
-310
+15
+160
+185
 193
-343
-wind_speed
-wind_speed
+air_temperature
+air_temperature
 0
+50
+20
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+620
+70
+690
+115
+trees
+trees
+0
+1
+11
+
+MONITOR
+620
+10
+690
+55
+burned trees
+burned_trees
+0
+1
+11
+
+BUTTON
+95
+0
+195
+45
+Burn a tree 
+add_fire
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+15
+245
+185
+278
+north_wind
+north_wind
+-100
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+15
+200
+185
+233
+west_wind
+west_wind
+-100
 100
 0
 1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+15
+290
+185
+323
+max_temperature
+max_temperature
+0
+500
+250
+1
+1
+ºk
+HORIZONTAL
+
+SLIDER
+15
+335
+185
+368
+humidity
+humidity
+0
+100
+50
+1
+1
+%
+HORIZONTAL
+
+CHOOSER
+30
+385
+170
+430
+Type_fuel
+type_fuel
+"1" "2" "3"
+2
+
+BUTTON
+95
+60
+190
+103
+Create Wall
+add_wall
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 @#$#@#$#@
 ## WHAT IS IT?
 
