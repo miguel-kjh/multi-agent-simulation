@@ -9,7 +9,6 @@ particles-own [
 
 globals [
   dt
-  G
   data
 ]
 
@@ -17,8 +16,34 @@ to setup
   clear-all
 
   create-particles 1 [sun]
-  create-particles 1 [earth]
-  create-particles 1 [create_celestial_body 6E24 0 2.27E11 red 7 30E3 0]
+  create-particles 1 [create_celestial_body 6E23 0 1E11 orange 5 35E3 0];; Mercurio
+  create-particles 1 [create_celestial_body 6E24 0 1.30E11 brown 9 32E3 0];; Venus
+  create-particles 1 [create_celestial_body 6E24 0 1.49E11 green 10 30E3 0];; Tierra
+  create-particles 1 [create_celestial_body 6.4E24 0 1.8E11 red 7 29E3 0];; Marte
+  create-particles 1 [create_celestial_body 6.4E24 0 2.3E11 violet 20 25E3 0];; Jupiter
+  create-particles 1 [create_celestial_body 6.4E24 0 2.5E11 pink 15 26E3 0];; Saturno
+  create-particles 1 [create_celestial_body 6.4E24 0 3.0E11 blue 14 23E3 0];; Urano
+  create-particles 1 [create_celestial_body 6.4E24 0 3.3E11 cyan 13 23E3 0];; Neptuno
+
+  ask particles [particle_render]
+	set G -6.67E-11
+  set dt 360
+end
+
+to setup_random
+  clear-all
+
+  create-particles 1 [sun]
+  create-particles number_planets [
+    create_celestial_body
+    6E24 + random 2E11
+    1E11 + random 2E11
+    1E11 + random 2E11
+    10 + random
+    50 1 + random 10
+    30E3 - random 5E3
+    0
+  ]
   ask particles [particle_render]
 	set G -6.67E-11
   set dt 360
@@ -27,22 +52,9 @@ end
 
 to sun
 	set m 2E30
-  set color yellow 
-  set size 50  
+  set color yellow
+  set size 50
   set shape "circle"
-end
-
-to earth
-	set m 6E24
-  set rx 0
-  set ry 1.9E11
-  set color blue
-  set size 10 
-  set vx 30E3  
-  set vy 0
-  set shape "circle"
-  particle_render
-  pen-down
 end
 
 to create_celestial_body [mass rx_ ry_ color_ size_ vx_ vy_]
@@ -50,8 +62,8 @@ to create_celestial_body [mass rx_ ry_ color_ size_ vx_ vy_]
   set rx rx
   set ry ry_
   set color color_
-  set size size_ 
-  set vx vx_  
+  set size size_
+  set vx vx_
   set vy vy_
   set shape "circle"
   particle_render
@@ -71,62 +83,67 @@ to particle_reset
 end
 
 to particle_calculate_forces
-  let id who 
-  ask particles with [who > id] [particle_forces id]  
+  let id who
+  ask particles with [who > id] [particle_forces id]
 end
 
 to particle_forces [p1]
   let m_1 0 let rx_1 0 let ry_1 0
   ask particle p1 [
-    set m_1 m 
-    set rx_1 rx 
+    set m_1 m
+    set rx_1 rx
     set ry_1 ry
   ]
-  
+
   let x rx - rx_1
   let y ry - ry_1
 
-  let force gravitational-force m_1 m (x * x + y * y)
-  let alfa atan y x
-  ask particle p1 [ set fx fx - force * cos alfa set fy fy - force * sin alfa ]
-  set fx fx + force * cos alfa
-  set fy fy + force * sin alfa
+  ifelse ((x * x + y * y) != 0)
+  [
+  	let force gravitational-force m_1 m (x * x + y * y)
+    let alfa atan y x
+    ask particle p1 [ set fx fx - force * cos alfa set fy fy - force * sin alfa ]
+    set fx fx + force * cos alfa
+    set fy fy + force * sin alfa
+  ][
+  	set fx 0
+    set fy 0
+  ]
 end
 
 to particle_calculate_trajectory
-  set rx rx + vx * dt / 2 
+  set rx rx + vx * dt / 2
   set ry ry + vy * dt / 2
 
   set vx vx + fx * dt / m
   set vy vy + fy * dt / m
 
-  set rx rx + vx * dt / 2 
+  set rx rx + vx * dt / 2
   set ry ry + vy * dt / 2
 end
 
 to particle_render
   let y ry / 2E9
   let x rx / 2E9
-  ifelse x < -200 or x > 200 or y < -200 or y > 200 
-		[set hidden? true] 
+  ifelse x < -200 or x > 200 or y < -200 or y > 200
+		[set hidden? true]
   [set xcor x set ycor y set hidden? false]
 end
 
 to-report gravitational-force [m_1 m_2 d2]
   report G * m_1 * m_2 / d2
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-2
-611
-403
+260
+20
+669
+430
 -1
 -1
+1.0
 1
-1
-10
+30
 1
 1
 1
@@ -142,7 +159,7 @@ GRAPHICS-WINDOW
 0
 1
 ticks
-30
+30.0
 
 BUTTON
 10
@@ -162,13 +179,13 @@ NIL
 1
 
 BUTTON
-5
-95
-185
-155
+10
+275
+190
+335
 go
 go
-NIL
+T
 1
 T
 OBSERVER
@@ -179,13 +196,13 @@ NIL
 1
 
 BUTTON
-5
-165
-185
-225
-go
-go
-T
+10
+110
+190
+170
+setup_random
+setup_random
+NIL
 1
 T
 OBSERVER
@@ -194,6 +211,37 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+15
+195
+185
+228
+number_planets
+number_planets
+1
+10
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+12
+237
+184
+270
+G
+G
+-6.67E-11
+0
+-6.67E-11
+1E-11
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -536,22 +584,22 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.0
+NetLogo 6.2.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 default
-0
--0.2 0 0 1
-0 1 1 0
-0.2 0 0 1
+0.0
+-0.2 0 0.0 1.0
+0.0 1 1.0 0.0
+0.2 0 0.0 1.0
 link direction
 true
 0
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-
+0
 @#$#@#$#@
