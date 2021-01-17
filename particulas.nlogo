@@ -137,11 +137,11 @@ end
 GRAPHICS-WINDOW
 260
 20
-669
-430
+661
+421
 -1
 -1
-1.0
+1
 1
 30
 1
@@ -159,7 +159,7 @@ GRAPHICS-WINDOW
 0
 1
 ticks
-30.0
+30
 
 BUTTON
 10
@@ -221,7 +221,7 @@ number_planets
 number_planets
 1
 10
-10.0
+10
 1
 1
 NIL
@@ -233,15 +233,14 @@ SLIDER
 184
 270
 G
-G
+g
 -6.67E-11
 0
--6.67E-11
+-6.67e-11
 1E-11
 1
 NIL
 HORIZONTAL
-
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -584,22 +583,22 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
 default
-0.0
--0.2 0 0.0 1.0
-0.0 1 1.0 0.0
-0.2 0 0.0 1.0
+0
+-0.2 0 0 1
+0 1 1 0
+0.2 0 0 1
 link direction
 true
 0
 Line -7500403 true 150 150 90 180
 Line -7500403 true 150 150 210 180
 @#$#@#$#@
-0
+
 @#$#@#$#@
