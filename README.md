@@ -1,4 +1,6 @@
-# multi-agent-simulation
+# Multi-agent-simulation
+
+In this repo we can see different examples of applications for multi-agent systems using netlogo
 
 <p align="center"> 
    <img src="videos/incendio.gif" alt="forest burnt"></img>
