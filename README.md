@@ -14,5 +14,5 @@ In this repo we can see different examples of applications for multi-agent syste
 
 <p align="center"> 
    <img src="videos/game_of_life.gif" alt="Game of life"></img>
-   <p align="center">Figure 2: Game of life simulator</p>
+   <p align="center">Figure 3: Game of life simulator</p>
 </p>
